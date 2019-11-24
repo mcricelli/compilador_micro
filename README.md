@@ -30,9 +30,7 @@ fin
 Ejemplo 2:
 
 inicio
-	leer(identificador1,identificador2,identificador3)
+	leer(identificador1,identificador2,identificador3);
 	identificador4 := identificador1 + identificador2;
 	escribir(identificador5,(identificador3+identificador4));
-fin:
-
-
+fin
