@@ -1,5 +1,8 @@
 %{
 #include <stdio.h>
+
+int yylex();
+int yyerror(char *);
 %}
 
 %union{
@@ -10,7 +13,7 @@
 %token  <dval> CONSTANTE 
 %token  <identificador> IDENTIFICADOR
 %token OPERADOR_ADITIVO ASIGNACION INICIO FIN LEER ESCRIBIR
-%token  PARENT_IZQUIERDO	PARENT_DERECHO     PUNTO_Y_COMA COMA
+%token  PARENT_IZQUIERDO PARENT_DERECHO PUNTO_Y_COMA COMA
 
 %%
 
@@ -20,18 +23,18 @@ sentencias          : sentencia sentencias { printf("\nSentencias->sent sents.\n
                     | sentencia { printf("\nSentencias->sent.\n");};
 
 sentencia           : IDENTIFICADOR ASIGNACION expresion PUNTO_Y_COMA { printf("\nSentencia-> identificador asignacion expresion punto y coma.\n");};
-                    | LEER PARENT_IZQUIERDO identificadores PARENT_DERECHO PUNTO_Y_COMA
-                    | ESCRIBIR PARENT_IZQUIERDO expresiones PARENT_DERECHO PUNTO_Y_COMA
+                    | LEER PARENT_IZQUIERDO identificadores PARENT_DERECHO PUNTO_Y_COMA { printf("\nSentencia-> leer (identificadores) punto y coma.\n");};
+                    | ESCRIBIR PARENT_IZQUIERDO expresiones PARENT_DERECHO PUNTO_Y_COMA { printf("\nSentencia-> escribir(expresiones) punto y coma.\n");};
 
 expresion           : primaria OPERADOR_ADITIVO expresion {printf("\nExpresion->primaria aditivo expresion.\n");}
                     | primaria {printf("\nExpresion->primaria.\n");}
 
 identificador       : IDENTIFICADOR {printf("\nIdentificador->IDENTIFICADOR.\n");}
 
-identificadores     : identificador identificadores {printf("\nIdentificadores->Identificadores.\n");}
+identificadores     : identificador COMA identificadores {printf("\nIdentificadores->Identificadores.\n");}
                     | identificador {printf("\nIdentificadores->Identificador.\n");}
 
-expresiones         : expresion expresiones {printf("\nExpresiones->Constante.\n");}
+expresiones         : expresion COMA expresiones {printf("\nExpresiones->Constante.\n");}
                     | expresion {printf("\nExpresiones->Constante.\n");}
 
 primaria            : CONSTANTE {printf("\nPrimaria->Constante.\n");}

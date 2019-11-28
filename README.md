@@ -51,7 +51,7 @@ En `Ubuntu:`
 inicio
 	identificador1 := 3;
 	identificador2 := 20;
-	resultado = identificador1 + (15 + identificador2);
+	resultado := identificador1 + (15 + identificador2);
 fin
 ```
 * Ejemplo 2:

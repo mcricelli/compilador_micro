@@ -1,3 +1,7 @@
 compilador.tab.*
 lex.yy.c
 exe
+clean
+make
+compilador
+*.mk
