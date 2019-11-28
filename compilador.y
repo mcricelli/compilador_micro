@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <stdlib.h> 
 #include <string.h>
 int yylex();
 int yyerror(char *);
@@ -25,6 +26,8 @@ int estaEnLista(Lista *lista, char *nombreBuscado, int* valor);
 int obtenerValor(Lista *lista, char *nombreBuscado);
 
 Lista* crearLista();
+
+void limpiarLista(Lista* lista);
 
 %}
 
@@ -184,5 +187,18 @@ int obtenerValor(Lista *lista, char *nombreBuscado)
                 aux = aux->siguiente;
         }
         return -1;
+    }
+}
+
+void limpiarLista(Lista* lista)
+{
+    Nodo* aux = lista->cabeza;
+    lista->cabeza = NULL;
+    
+    while (aux != NULL)
+    {
+        Nodo* sig = aux->siguiente;
+        free(aux);
+        aux = sig;
     }
 }
