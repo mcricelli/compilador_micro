@@ -1,13 +1,41 @@
 %{
 #include <stdio.h>
+#include <string.h>
 int yylex();
 int yyerror(char *);
+
+typedef struct Nodo
+{
+    char nombre[33];
+    int valor;
+    struct Nodo* siguiente;
+} Nodo;
+
+typedef struct Lista
+{
+    Nodo* cabeza;
+} Lista;
+
+Nodo* crearNodo(char *nombre, int valor);
+
+void agregarNodo(Lista *lista, Nodo* nodo);
+
+int estaEnLista(Lista *lista, char *nombreBuscado, int* valor);
+
+int obtenerValor(Lista *lista, char *nombreBuscado);
+
+Lista* crearLista();
+
 %}
 
 %union{
     char* identificador;
     int iValue;
 }
+
+%type <identificador> expresiones
+%type <identificador> primaria
+%type <identificador> expresion
 
 %token  <iValue> CONSTANTE 
 %token  <identificador> IDENTIFICADOR
@@ -24,19 +52,19 @@ sentencias          : sentencia sentencias
 
 sentencia           : IDENTIFICADOR ASIGNACION expresion PUNTO_Y_COMA 
                     | LEER PARENT_IZQUIERDO identificadores PARENT_DERECHO PUNTO_Y_COMA 
-                    | ESCRIBIR PARENT_IZQUIERDO expresiones PARENT_DERECHO PUNTO_Y_COMA 
+                    | ESCRIBIR PARENT_IZQUIERDO expresiones PARENT_DERECHO PUNTO_Y_COMA
 
 expresiones         : expresion COMA expresiones 
                     | expresion 
 
-expresion           : primaria OPERADOR_ADITIVO expresion 
+expresion           : primaria OPERADOR_ADITIVO expresion
                     | primaria 
 
 identificadores     : IDENTIFICADOR COMA identificadores 
                     | IDENTIFICADOR
 
 primaria            : CONSTANTE 
-                    | IDENTIFICADOR  
+                    | IDENTIFICADOR 
                     | PARENT_IZQUIERDO expresion PARENT_DERECHO 
 
 
@@ -78,4 +106,83 @@ int main(int argc, char* argv[]) {
     }
         
     return 0;
+}
+
+// Funciones de manejo de listas
+Lista* crearLista()
+{
+    Lista* lista = (Lista*)malloc(sizeof(Lista));
+    lista->cabeza = NULL;
+    return lista;
+}
+
+Nodo* crearNodo(char *nombre, int valor)
+{
+    Nodo* nodo = (Nodo*) malloc(sizeof(Nodo));
+    strncpy(nodo->nombre, nombre, sizeof(nodo->nombre));
+    nodo->valor = valor;
+    nodo->siguiente = NULL;
+    return nodo;
+}
+
+void agregarNodo(Lista *lista, Nodo* nodo)
+{
+    if (lista->cabeza == NULL)
+    {
+        lista->cabeza = nodo;
+    }
+    else
+    {
+        Nodo* aux = lista->cabeza;
+        while (aux->siguiente)
+        {
+            aux = aux->siguiente;
+        }
+        aux->siguiente = nodo;
+    }
+}
+
+int estaEnLista(Lista *lista, char *nombreBuscado, int* valor)
+{
+    Nodo* aux = lista->cabeza;
+    if (aux == NULL)
+    {
+        return 0;
+    }
+    else
+    {
+        while (aux != NULL)
+        {
+            if (strcmp(aux->nombre, nombreBuscado) == 0)
+            {
+                *valor = aux->valor;
+                return 1;
+            }
+            else
+                aux = aux->siguiente;
+        }
+        return 0;
+    }
+}
+
+int obtenerValor(Lista *lista, char *nombreBuscado)
+{
+    Nodo* aux = lista->cabeza;
+    if (aux == NULL)
+    {
+        return 0;
+    }
+    else
+    {
+        while (aux != NULL)
+        {
+            if (strcmp(aux->nombre, nombreBuscado) == 0)
+            {
+                return aux->valor;
+            }
+            else
+                aux = aux->siguiente;
+        }
+        return -1;
+    }
 }
