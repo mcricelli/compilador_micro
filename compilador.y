@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <stdlib.h> 
 #include <string.h>
 int yylex();
 int yyerror(char *);
@@ -26,13 +27,16 @@ int obtenerValor(Lista *lista, char *nombreBuscado);
 
 Lista* crearLista();
 
+void limpiarLista(Lista* lista);
+
 void llenarListaCon(Lista *listaALlenar,Lista *listaACopiar);
 
-mostrar(Lista *lista);
+void mostrar(Lista *lista);
 
-Lista* diccionario = crearLista();
-Lista* listaIdentificadores = crearLista();
-Lista* listaExpresiones = crearLista();
+Lista* diccionario;
+Lista* listaIdentificadores;
+Lista* listaExpresiones;
+
 %}
 
 %union{
@@ -78,7 +82,7 @@ primaria            : CONSTANTE {$$ = $1;}
                                 $$ = valor;
                             }
                         }
-                    | PARENT_IZQUIERDO expresion PARENT_DERECHO  {$$ = $3;};
+                    | PARENT_IZQUIERDO expresion PARENT_DERECHO  {$$ = $2;};
 
 
 %%
@@ -93,6 +97,9 @@ int main(int argc, char* argv[]) {
     int cantidadParametros = argc;
     FILE * archivoALeer = NULL;
     char* nombreArchivoALeer;
+    diccionario = crearLista();
+    listaIdentificadores = crearLista();
+    listaExpresiones = crearLista();
 
     switch(cantidadParametros){
         case 1: 
@@ -200,6 +207,20 @@ int obtenerValor(Lista *lista, char *nombreBuscado)
     }
 }
 
+void limpiarLista(Lista* lista)
+{
+    Nodo* aux = lista->cabeza;
+    lista->cabeza = NULL;
+    
+    while (aux != NULL)
+    {
+        Nodo* sig = aux->siguiente;
+        free(aux);
+        aux = sig;
+    }
+
+}
+
 void llenarListaCon(Lista *listaALlenar,Lista *listaACopiar) {
 
     int valorAGuardar;
@@ -208,10 +229,19 @@ void llenarListaCon(Lista *listaALlenar,Lista *listaACopiar) {
         printf("Ingrese el valor para el identificador %s : ",aux->nombre);
         scanf("%d",&valorAGuardar);
         agregarNodo(listaALlenar, crearNodo(aux->nombre, valorAGuardar));
+        aux = aux->siguiente;
     }
     limpiarLista(listaACopiar);
 }
 
-mostrar(Lista *lista) {
+void mostrar(Lista *lista) {
 
+    Nodo* aux = lista->cabeza;
+    
+    while (aux != NULL)
+    {
+        printf("%d\n", aux->valor);
+        aux = aux->siguiente;
+    }
+    limpiarLista(lista);
 }
