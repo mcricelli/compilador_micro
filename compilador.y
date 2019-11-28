@@ -1,45 +1,43 @@
 %{
 #include <stdio.h>
-
 int yylex();
 int yyerror(char *);
 %}
 
 %union{
     char* identificador;
-    int dval;
+    int iValue;
 }
 
-%token  <dval> CONSTANTE 
+%token  <iValue> CONSTANTE 
 %token  <identificador> IDENTIFICADOR
-%token OPERADOR_ADITIVO ASIGNACION INICIO FIN LEER ESCRIBIR
+%token  OPERADOR_ADITIVO ASIGNACION INICIO FIN LEER ESCRIBIR
 %token  PARENT_IZQUIERDO PARENT_DERECHO PUNTO_Y_COMA COMA
+%start  programa
 
 %%
 
 programa            : INICIO sentencias FIN { printf("\nCompilación exitosa.\n");};
 
-sentencias          : sentencia sentencias { printf("\nSentencias->sent sents.\n");};
-                    | sentencia { printf("\nSentencias->sent.\n");};
+sentencias          : sentencia sentencias
+                    | sentencia
 
-sentencia           : IDENTIFICADOR ASIGNACION expresion PUNTO_Y_COMA { printf("\nSentencia-> identificador asignacion expresion punto y coma.\n");};
-                    | LEER PARENT_IZQUIERDO identificadores PARENT_DERECHO PUNTO_Y_COMA { printf("\nSentencia-> leer (identificadores) punto y coma.\n");};
-                    | ESCRIBIR PARENT_IZQUIERDO expresiones PARENT_DERECHO PUNTO_Y_COMA { printf("\nSentencia-> escribir(expresiones) punto y coma.\n");};
+sentencia           : IDENTIFICADOR ASIGNACION expresion PUNTO_Y_COMA 
+                    | LEER PARENT_IZQUIERDO identificadores PARENT_DERECHO PUNTO_Y_COMA 
+                    | ESCRIBIR PARENT_IZQUIERDO expresiones PARENT_DERECHO PUNTO_Y_COMA 
 
-expresion           : primaria OPERADOR_ADITIVO expresion {printf("\nExpresion->primaria aditivo expresion.\n");}
-                    | primaria {printf("\nExpresion->primaria.\n");}
+expresiones         : expresion COMA expresiones 
+                    | expresion 
 
-identificador       : IDENTIFICADOR {printf("\nIdentificador->IDENTIFICADOR.\n");}
+expresion           : primaria OPERADOR_ADITIVO expresion 
+                    | primaria 
 
-identificadores     : identificador COMA identificadores {printf("\nIdentificadores->Identificadores.\n");}
-                    | identificador {printf("\nIdentificadores->Identificador.\n");}
+identificadores     : IDENTIFICADOR COMA identificadores 
+                    | IDENTIFICADOR
 
-expresiones         : expresion COMA expresiones {printf("\nExpresiones->Constante.\n");}
-                    | expresion {printf("\nExpresiones->Constante.\n");}
-
-primaria            : CONSTANTE {printf("\nPrimaria->Constante.\n");}
-                    | IDENTIFICADOR  {printf("\nPrimaria->Identificador.\n");}
-                    | PARENT_IZQUIERDO expresion PARENT_DERECHO {printf("\nPrimaria->Exp entre parentesis.\n");}
+primaria            : CONSTANTE 
+                    | IDENTIFICADOR  
+                    | PARENT_IZQUIERDO expresion PARENT_DERECHO 
 
 
 %%
@@ -51,18 +49,33 @@ int yyerror(char *s) {
 
 int main(int argc, char* argv[]) {
 
-    if (argc == 2)
-    {
-        FILE *source = fopen(argv[1], "r");
-        
-        if (!source) {
-            printf("Imposible abrir el archivo %s.\n", argv[1]);
-            return -1;
-        }
-        
-        yyin = source;
+    int cantidadParametros = argc;
+    FILE * archivoALeer = NULL;
+    char* nombreArchivoALeer;
+
+    switch(cantidadParametros){
+        case 1: 
+            yyin = stdin;
+            break;
+        case 2: 
+            nombreArchivoALeer = argv[1];
+            archivoALeer = fopen(nombreArchivoALeer, "r");
+            
+            if (!archivoALeer) {
+                printf("Error al intentar abrir el archivo %s.\n", nombreArchivoALeer);
+                return -1;
+            }
+            yyin = archivoALeer;
+            break;
+        default:
+            printf("Error al iniciar programa. Demasiados argumentos\n");
     }
 
     yyparse();
+    
+    if(archivoALeer) {
+        fclose(archivoALeer);
+    }
+        
     return 0;
 }
