@@ -26,6 +26,13 @@ int obtenerValor(Lista *lista, char *nombreBuscado);
 
 Lista* crearLista();
 
+void llenarListaCon(Lista *listaALlenar,Lista *listaACopiar);
+
+mostrar(Lista *lista);
+
+Lista* diccionario = crearLista();
+Lista* listaIdentificadores = crearLista();
+Lista* listaExpresiones = crearLista();
 %}
 
 %union{
@@ -33,14 +40,14 @@ Lista* crearLista();
     int iValue;
 }
 
-%type <identificador> expresiones
-%type <identificador> primaria
-%type <identificador> expresion
+%token  <iValue> CONSTANTE PARENT_IZQUIERDO PARENT_DERECHO PUNTO_Y_COMA COMA
+%token  <identificador> IDENTIFICADOR ASIGNACION INICIO FIN LEER ESCRIBIR
 
-%token  <iValue> CONSTANTE 
-%token  <identificador> IDENTIFICADOR
-%token  OPERADOR_ADITIVO ASIGNACION INICIO FIN LEER ESCRIBIR
-%token  PARENT_IZQUIERDO PARENT_DERECHO PUNTO_Y_COMA COMA
+%left  SUMA RESTA
+
+%type <identificador> sentencia identificadores
+%type <iValue> primaria expresion expresiones
+
 %start  programa
 
 %%
@@ -48,24 +55,30 @@ Lista* crearLista();
 programa            : INICIO sentencias FIN { printf("\nCompilación exitosa.\n");};
 
 sentencias          : sentencia sentencias
-                    | sentencia
+                    | sentencia;
 
-sentencia           : IDENTIFICADOR ASIGNACION expresion PUNTO_Y_COMA 
-                    | LEER PARENT_IZQUIERDO identificadores PARENT_DERECHO PUNTO_Y_COMA 
-                    | ESCRIBIR PARENT_IZQUIERDO expresiones PARENT_DERECHO PUNTO_Y_COMA
+sentencia           : IDENTIFICADOR ASIGNACION expresion PUNTO_Y_COMA {agregarNodo(diccionario, crearNodo($1, $3));}
+                    | LEER PARENT_IZQUIERDO identificadores PARENT_DERECHO PUNTO_Y_COMA {llenarListaCon(diccionario,listaIdentificadores);}
+                    | ESCRIBIR PARENT_IZQUIERDO expresiones PARENT_DERECHO PUNTO_Y_COMA {mostrar(listaExpresiones);};
 
-expresiones         : expresion COMA expresiones 
-                    | expresion 
+expresiones         : expresion {agregarNodo(listaExpresiones, crearNodo("", $1));} COMA expresiones 
+                    | expresion {agregarNodo(listaExpresiones, crearNodo("", $1));};
 
-expresion           : primaria OPERADOR_ADITIVO expresion
-                    | primaria 
+expresion           : primaria SUMA expresion {$$ = $1 + $3;}
+                    | primaria RESTA expresion {$$ = $1 - $3;}
+                    | primaria {$$ = $1;};
 
-identificadores     : IDENTIFICADOR COMA identificadores 
-                    | IDENTIFICADOR
+identificadores     : IDENTIFICADOR {agregarNodo(listaIdentificadores, crearNodo($1, 0));} COMA identificadores 
+                    | IDENTIFICADOR {agregarNodo(listaIdentificadores, crearNodo($1, 0));};
 
-primaria            : CONSTANTE 
-                    | IDENTIFICADOR 
-                    | PARENT_IZQUIERDO expresion PARENT_DERECHO 
+primaria            : CONSTANTE {$$ = $1;}
+                    | IDENTIFICADOR {
+                            int valor; 
+                            if(estaEnLista(diccionario,$1,&valor)){
+                                $$ = valor;
+                            }
+                        }
+                    | PARENT_IZQUIERDO expresion PARENT_DERECHO  {$$ = $3;};
 
 
 %%
@@ -185,4 +198,20 @@ int obtenerValor(Lista *lista, char *nombreBuscado)
         }
         return -1;
     }
+}
+
+void llenarListaCon(Lista *listaALlenar,Lista *listaACopiar) {
+
+    int valorAGuardar;
+    Nodo* aux = listaACopiar->cabeza;
+    while (aux != NULL) {
+        printf("Ingrese el valor para el identificador %s : ",aux->nombre);
+        scanf("%d",&valorAGuardar);
+        agregarNodo(listaALlenar, crearNodo(aux->nombre, valorAGuardar));
+    }
+    limpiarLista(listaACopiar);
+}
+
+mostrar(Lista *lista) {
+
 }
